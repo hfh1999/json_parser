@@ -16,13 +16,16 @@ namespace Json
         TRUE_TYPE,
         FALSE_TYPE,
         NUMBER_TYPE,
+        STRING_TYPE,
+        INVALID_TYPE,
     };
     class Value
     {
     public:
-        Value() = default;
+        Value():_type(ValueType::INVALID_TYPE),_data(){}
         Value(ValueType in_type) : _type(in_type),_data() {}
         Value(ValueType in_type, double in_num):_type(in_type),_data(new ValueData(in_num)){}
+        Value(ValueType in_type, const string& in_s):_type(in_type),_data(new ValueData(in_s)){}
         bool isBool()
         {
             return _type == ValueType::FALSE_TYPE ||
@@ -36,6 +39,11 @@ namespace Json
         {
             return _type == ValueType::NUMBER_TYPE;
         }
+        bool isString()
+        {
+            return _type == ValueType::STRING_TYPE;
+        }
+
         void debug_print()
         {
             switch(_type)
@@ -49,6 +57,12 @@ namespace Json
                     break;
                 case ValueType::NUMBER_TYPE:
                     printf("NUMBER type.\n");
+                    break;
+                case ValueType::STRING_TYPE:
+                    printf("STRING type.\n");
+                    break;
+                case ValueType::INVALID_TYPE:
+                    printf("Invalid type.\n");
                     break;
                 default:
                     printf("Unknow type.\n");
@@ -83,6 +97,7 @@ namespace Json
         ParseError _parse_value(TokenStream &in_tokens, Value &in_value);
         ParseError _parse_boolen(TokenStream &in_tokens, Value &in_value);
         ParseError _parse_number(TokenStream &in_tokens, Value &in_value);
+        ParseError _parse_string(TokenStream &in_tokens, Value&in_value);
 
         Value& _parsed_result;
         string _raw_str;

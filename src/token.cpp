@@ -6,6 +6,8 @@ const int FALSE_STR_LEN = 5;
 void TokenStream::_split_to_tokens()
 {
     Token tmp_token;
+    string strbuf;
+    bool flag = false; // 转义flag
     string::size_type index = 0;
     for (; index < _json_raw_str.size();)
     {
@@ -82,7 +84,7 @@ void TokenStream::_split_to_tokens()
                 index += FALSE_STR_LEN;
             }
             break;
-        
+
         /*number*/
         case '-':
         case '0':
@@ -105,12 +107,12 @@ void TokenStream::_split_to_tokens()
                 FRAC_STATUS,  // 小数部分
                 ESIGN_STATUS, // e的正负号
                 EINT_STATUS,  // 指数的数值
-                END_STATUS,// 结束解析
+                END_STATUS,   // 结束解析
             };
-            //printf("enter number deal...\n");
+            // printf("enter number deal...\n");
             NumParseStatus status;
             NumData num_data;
-            if(ch == '-')
+            if (ch == '-')
             {
                 status = NumParseStatus::MINUS_STATUS;
                 num_data.is_minus = true;
@@ -121,15 +123,15 @@ void TokenStream::_split_to_tokens()
                 num_data.is_minus = false;
             }
 
-            if(status == NumParseStatus::INT_STATUS)
+            if (status == NumParseStatus::INT_STATUS)
             {
                 num_data.int_part = 0;
-                while(index < _json_raw_str.size() && isdigit(_json_raw_str[index]))
+                while (index < _json_raw_str.size() && isdigit(_json_raw_str[index]))
                 {
                     num_data.int_part = num_data.int_part * 10 + _json_raw_str[index];
                     index += 1;
                 }
-                if(index >= _json_raw_str.size())
+                if (index >= _json_raw_str.size())
                 {
                     status = NumParseStatus::END_STATUS;
                     break;
@@ -148,12 +150,12 @@ void TokenStream::_split_to_tokens()
                 }
             }
 
-            if(status == NumParseStatus::DOT_STATUS)
+            if (status == NumParseStatus::DOT_STATUS)
             {
                 index += 1;
-                if(index >= _json_raw_str.size())
+                if (index >= _json_raw_str.size())
                 {
-                    //printf("num parse error:dot with nothing.\n");
+                    // printf("num parse error:dot with nothing.\n");
                     _status = TokensStatus::NUMBER_FORMAT_ERROR;
                     return;
                 }
@@ -164,26 +166,26 @@ void TokenStream::_split_to_tokens()
                 }
                 else
                 {
-                    //printf("num parse error:dot with unexpect char.\n");
+                    // printf("num parse error:dot with unexpect char.\n");
                     _status = TokensStatus::NUMBER_FORMAT_ERROR;
                     return;
                 }
             }
 
-            if(status == NumParseStatus::FRAC_STATUS)
+            if (status == NumParseStatus::FRAC_STATUS)
             {
                 num_data.frac_part = 0;
-                while(index < _json_raw_str.size() && isdigit(_json_raw_str[index]))
+                while (index < _json_raw_str.size() && isdigit(_json_raw_str[index]))
                 {
                     num_data.frac_part = num_data.frac_part * 10 + _json_raw_str[index];
                     index += 1;
                 }
-                if(index >= _json_raw_str.size())
+                if (index >= _json_raw_str.size())
                 {
                     status = NumParseStatus::END_STATUS;
                     break;
                 }
-                if(_json_raw_str[index] == 'e' || _json_raw_str[index] == 'E')
+                if (_json_raw_str[index] == 'e' || _json_raw_str[index] == 'E')
                 {
                     status = NumParseStatus::E_STATUS;
                 }
@@ -192,30 +194,30 @@ void TokenStream::_split_to_tokens()
                     status = NumParseStatus::END_STATUS;
                 }
             }
-            if(status == NumParseStatus::E_STATUS)
+            if (status == NumParseStatus::E_STATUS)
             {
                 index += 1;
-                if(index >= _json_raw_str.size())
+                if (index >= _json_raw_str.size())
                 {
-                    //printf("num parse error:e char with nothing.\n");
+                    // printf("num parse error:e char with nothing.\n");
                     _status = TokensStatus::NUMBER_FORMAT_ERROR;
                     return;
                 }
-                if(_json_raw_str[index] == '+' || _json_raw_str[index] == '-')
+                if (_json_raw_str[index] == '+' || _json_raw_str[index] == '-')
                 {
                     status = NumParseStatus::ESIGN_STATUS;
                 }
                 else
                 {
-                    //printf("num parse error:e char with unexpect char -> %c.\n",_json_raw_str[index]);
+                    // printf("num parse error:e char with unexpect char -> %c.\n",_json_raw_str[index]);
                     _status = TokensStatus::NUMBER_FORMAT_ERROR;
                     return;
                 }
             }
 
-            if(status == NumParseStatus::ESIGN_STATUS)
+            if (status == NumParseStatus::ESIGN_STATUS)
             {
-                if(_json_raw_str[index] == '+')
+                if (_json_raw_str[index] == '+')
                 {
                     num_data.exp_part = true;
                 }
@@ -224,27 +226,27 @@ void TokenStream::_split_to_tokens()
                     num_data.exp_part = false;
                 }
                 index += 1;
-                if(index >= _json_raw_str.size())
+                if (index >= _json_raw_str.size())
                 {
-                    //printf("num parse error:e sign with nothing.\n");
+                    // printf("num parse error:e sign with nothing.\n");
                     _status = TokensStatus::NUMBER_FORMAT_ERROR;
                     return;
                 }
-                if(isdigit(_json_raw_str[index]))
+                if (isdigit(_json_raw_str[index]))
                 {
                     status = NumParseStatus::EINT_STATUS;
                 }
                 else
                 {
-                    //printf("num parse error:e sign with unexpect char.\n");
+                    // printf("num parse error:e sign with unexpect char.\n");
                     _status = TokensStatus::NUMBER_FORMAT_ERROR;
                     return;
                 }
             }
-            if(status == NumParseStatus::EINT_STATUS)
+            if (status == NumParseStatus::EINT_STATUS)
             {
                 num_data.exp_part = 0;
-                while(index < _json_raw_str.size() && isdigit(_json_raw_str[index]))
+                while (index < _json_raw_str.size() && isdigit(_json_raw_str[index]))
                 {
                     num_data.exp_part = num_data.exp_part * 10 + _json_raw_str[index];
                     index += 1;
@@ -252,14 +254,72 @@ void TokenStream::_split_to_tokens()
                 status = NumParseStatus::END_STATUS;
             }
 
-            if(status == NumParseStatus::END_STATUS)
+            if (status == NumParseStatus::END_STATUS)
             {
-
             }
             tmp_token.type = TokenType::NUMBER_TOKEN;
             tmp_token.num_data = num_data;
             _tokens.push_back(tmp_token);
-            //printf("!!!!yes!!!\n");
+            // printf("!!!!yes!!!\n");
+            break;
+
+        /*字符串*/
+        case '\"':
+            index += 1;
+            for (; index <= _json_raw_str.size(); index++)
+            {
+                char tmp_ch = _json_raw_str[index];
+                if (flag == false)
+                {
+                    if (tmp_ch == '\"')
+                        break;
+
+                    if (tmp_ch == '\\')
+                    {
+                        flag = true;
+                        continue;
+                    }
+                    strbuf.push_back(tmp_ch);
+                }
+                else
+                {
+                    switch (tmp_ch)
+                    {
+                    case '\"':
+                        strbuf.push_back('\"');
+                        break;
+                    case '\\':
+                        strbuf.push_back('\\');
+                        break;
+                    case '/':
+                        strbuf.push_back('/'); // ???
+                        break;
+                    case 'b':
+                        strbuf.push_back('\b');
+                        break;
+                    case 'f':
+                        strbuf.push_back('\f');
+                        break;
+                    case 'n':
+                        strbuf.push_back('\n');
+                        break;
+                    case 'r':
+                        strbuf.push_back('\r');
+                        break;
+                    case 't':
+                        strbuf.push_back('\t');
+                        break;
+
+                    default:
+                        _status = TokensStatus::STRING_BAD;
+                        return;
+                    }
+                    flag = false;
+                }
+            }
+            tmp_token.type = TokenType::STRING_TOKEN;
+            tmp_token.str_data = strbuf;
+            _tokens.push_back(tmp_token);
             break;
 
         /*剩下的情况都是tokenlize出错的情况*/
