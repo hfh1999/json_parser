@@ -14,7 +14,20 @@ namespace Json
         TokenStream tokens(_raw_str);
         if (tokens.getStatus() != TokensStatus::TOKENS_GOOD)
         {
-            printf("Parse Error when parse tokens.\n");
+            switch(tokens.getStatus())
+            {
+                case TokensStatus::EXPECT_KEY_ERROR:
+                    printf("parse token error: expect key.\n");
+                    break;
+                case TokensStatus::KEY_WORD_ERROR:
+                    printf("parse token error: key word not correct.\n");
+                    break;
+                case TokensStatus::NUMBER_FORMAT_ERROR:
+                    printf("parse token error: number format error.\n");
+                    break;
+                default:
+                printf("Unknow parse token error.\n");
+            }
             return ParseError::ERROR_KEY_WORD;
         }
         return _parse_json(tokens,_parsed_result);
@@ -34,6 +47,8 @@ namespace Json
         case TokenType::TRUE_TOKEN:
         case TokenType::FALSE_TOKEN:
             return _parse_boolen(in_tokens,in_value);
+        case TokenType::NUMBER_TOKEN:
+            return _parse_number(in_tokens,in_value);
         default:
             return ParseError::INVALID_VALUE;
         }
@@ -67,5 +82,17 @@ namespace Json
             in_tokens.next();
             return ParseError::OK;
         }
+    }
+    
+    ParseError Reader::_parse_number(TokenStream &in_tokens, Value &in_value)
+    {
+        auto token = in_tokens.getToken();
+        /*将number token转换为double.*/
+        double number = 0;
+        //*todo*
+
+        in_value = Value(ValueType::NUMBER_TYPE,number);
+        in_tokens.next();
+        return ParseError::OK;
     }
 }

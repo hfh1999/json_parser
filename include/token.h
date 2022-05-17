@@ -22,13 +22,23 @@ enum TokenType
 };
 enum TokensStatus
 {
-    KEY_WORD_ERROR, // 关键词书写错误，不是null,true,false,中的任何一个
+    KEY_WORD_ERROR, // 关键词书写错误，不是null,true,false部分写对
+    NUMBER_FORMAT_ERROR,// 数字格式错误
+    EXPECT_KEY_ERROR,// 不是预期中的关键词
     TOKENS_GOOD,    // token状态完好
+};
+struct NumData{
+    bool is_minus;
+    uint32_t int_part;
+    uint32_t frac_part;
+    bool exp_sign; // + -> true
+    int32_t exp_part;
 };
 struct Token
 {
     TokenType type;
-    string data;
+    NumData num_data;
+    string str_data;
 };
 class TokenStream
 {

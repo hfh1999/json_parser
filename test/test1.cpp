@@ -1,29 +1,24 @@
 #include <json_parser.h>
 #include <iostream>
+using std::string;
+void test(const string& in_str);
 int main(){
-    Json::Value v;
-    Json::Value v2;
-    Json::Reader reader("  trueh  ",v);
-    Json::Reader reader2("  \n null \r \n  ",v2);
-    reader.parse();
-    reader2.parse();
-    if(v.isBool()) 
-    {
-        printf("is bool.\n");
-    }
-    else
-    {
-        printf("not bool.\n");
-    }
-    if(v2.isNull()) 
-    {
-        printf("is bool.\n");
-    }
-    else
-    {
-        printf("not bool.\n");
-    }
-    v.debug_print();
-    v2.debug_print();
+    string str1 = "true";
+    string str2 = "  true";
+    string str3 = "  false";
+    string str4 = "  null \r \n  ";
+    string str5 = "  123.44e+231  \r\n";
+    test(str1);
+    test(str2);
+    test(str3);
+    test(str4);
+    test(str5);
     return 0;
+}
+void test(const string& in_str)
+{
+    Json::Value v;
+    Json::Reader reader(in_str,v);
+    reader.parse();
+    v.debug_print();
 }

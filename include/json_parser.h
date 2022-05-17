@@ -1,7 +1,10 @@
 #ifndef JSON_PARSER_H
 #define JSON_PARSER_H
 #include <string>
+#include <value_data.h>
+#include <memory>
 using std::string;
+using std::unique_ptr;
 
 class TokenStream;
 namespace Json
@@ -12,12 +15,14 @@ namespace Json
         NULL_TYPE,
         TRUE_TYPE,
         FALSE_TYPE,
+        NUMBER_TYPE,
     };
     class Value
     {
     public:
         Value() = default;
-        Value(ValueType in_type) : _type(in_type) {}
+        Value(ValueType in_type) : _type(in_type),_data() {}
+        Value(ValueType in_type, double in_num):_type(in_type),_data(new ValueData(in_num)){}
         bool isBool()
         {
             return _type == ValueType::FALSE_TYPE ||
@@ -26,6 +31,10 @@ namespace Json
         bool isNull()
         {
             return _type == ValueType::NULL_TYPE;
+        }
+        bool isNumber()
+        {
+            return _type == ValueType::NUMBER_TYPE;
         }
         void debug_print()
         {
@@ -38,13 +47,20 @@ namespace Json
                 case ValueType::NULL_TYPE:
                     printf("null type.\n");
                     break;
+                case ValueType::NUMBER_TYPE:
+                    printf("NUMBER type.\n");
+                    break;
                 default:
                     printf("Unknow type.\n");
             }
         }
 
     private:
+        double ret_number(){
+            return _data->n;
+        }
         ValueType _type;
+        unique_ptr<ValueData> _data;
     };
     enum ParseError
     {
@@ -66,6 +82,7 @@ namespace Json
         ParseError _parse_null(TokenStream &in_tokens, Value &in_value);
         ParseError _parse_value(TokenStream &in_tokens, Value &in_value);
         ParseError _parse_boolen(TokenStream &in_tokens, Value &in_value);
+        ParseError _parse_number(TokenStream &in_tokens, Value &in_value);
 
         Value& _parsed_result;
         string _raw_str;
