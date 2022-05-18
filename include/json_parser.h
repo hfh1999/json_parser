@@ -51,6 +51,11 @@ namespace Json
             return _type == ValueType::ARRAY_TYPE;
         }
 
+        ValueType getType()
+        {
+            return _type;
+        }
+
         void debug_print()
         {
             switch (_type)
