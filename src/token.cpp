@@ -23,6 +23,26 @@ void TokenStream::_split_to_tokens()
             index += 1;
             break;
         
+        /*left object token: {*/
+        case '{':
+            tmp_token.type = TokenType::LEFT_OBJECT_TOKEN;
+            _tokens.push_back(tmp_token);
+            index += 1;
+            break;
+        
+        /*right object token: }*/
+        case '}':
+            tmp_token.type = TokenType::RIGHT_OBJECT_TOKEN;
+            _tokens.push_back(tmp_token);
+            index += 1;
+            break;
+        
+        case ':':
+            tmp_token.type = TokenType::COLON_TOKEN;
+            _tokens.push_back(tmp_token);
+            index += 1;
+            break;
+
         /*left array token: [*/
         case '[':
             tmp_token.type = TokenType::LEFT_ARRAY_TOKEN;
@@ -334,6 +354,9 @@ void TokenStream::_split_to_tokens()
                     case 't':
                         strbuf.push_back('\t');
                         break;
+
+                    /*to do*/
+                    // \uxxxx 转义为utf8编码
 
                     default:
                         _status = TokensStatus::STRING_BAD;

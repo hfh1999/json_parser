@@ -56,10 +56,13 @@ int main(){
     test_value("  null \r \n  ",ValueType::NULL_TYPE);
     test_value(" \r 123.44e+231  \r\n",ValueType::NUMBER_TYPE);
     test_value("     \"hello\"   ",ValueType::STRING_TYPE);
+    test_value("\"\"",ValueType::STRING_TYPE);
+    test_value("     \"你好 这里是utf8\"   ",ValueType::STRING_TYPE);
     test_value("     \"h\\\"el\\blo\"   ",ValueType::STRING_TYPE);
     test_value_panic("     \"h\\\"el\\\blo\"",ValueType::STRING_TYPE);
     test_value( "     \"h   \\\"el\\b\\\\lo\"   ",ValueType::STRING_TYPE);
     test_value("     [2,null]   ",ValueType::ARRAY_TYPE);
+    test_value("     []   ",ValueType::ARRAY_TYPE);
     test_value( "     [\"hello\",3,null,[1,2,3,true]]   ",ValueType::ARRAY_TYPE);
     test_value( "     [  \r\n\"hello\",3,null,[1,\r  2,3,true]]   ",ValueType::ARRAY_TYPE);
     test_value( "     [  \r\n\"hello\",3,null,[-13445.213e+1234,\r  2,3,true]]   ",ValueType::ARRAY_TYPE);

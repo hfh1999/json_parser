@@ -120,9 +120,36 @@ namespace Json
     {
         in_value.set_type(ValueType::ARRAY_TYPE);
         bool flag = false;// 状态机，由于状态少直接用bool表示
+        
+        /*init status [*/
+        in_tokens.next();
+
+        _parse_whitespace(in_tokens);
+        if(in_tokens.getToken().type == TokenType::RIGHT_ARRAY_TOKEN)
+        {
+            return ParseError::OK;
+        }
+        if (in_tokens.getToken().type == TokenType::FALSE_TOKEN ||
+            in_tokens.getToken().type == TokenType::TRUE_TOKEN ||
+            in_tokens.getToken().type == TokenType::NULL_TOKEN ||
+            in_tokens.getToken().type == TokenType::NUMBER_TOKEN ||
+            in_tokens.getToken().type == TokenType::STRING_TOKEN ||
+            in_tokens.getToken().type == TokenType::LEFT_ARRAY_TOKEN)
+        {
+            flag = true;
+        }
+        else
+        {
+            //error:逗号之后遇到了无效token
+            printf("invalid token after [\n");
+            in_tokens.getToken().debug_print();
+            in_value.set_type(ValueType::INVALID_TYPE);
+            return ParseError::INVALID_VALUE;
+        }
+
         while(in_tokens.getToken().type != TokenType::END_TOKEN)
         {
-            if(flag == false)// ',' 或 '['(初始) 状态
+            if(flag == false)// ','
             {
                 /*do nothing else here*/
                 in_tokens.next();
