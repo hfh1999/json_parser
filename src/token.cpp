@@ -22,6 +22,27 @@ void TokenStream::_split_to_tokens()
             _tokens.push_back(tmp_token);
             index += 1;
             break;
+        
+        /*left array token: [*/
+        case '[':
+            tmp_token.type = TokenType::LEFT_ARRAY_TOKEN;
+            _tokens.push_back(tmp_token);
+            index += 1;
+            break;
+
+        /*right array token: ]*/
+        case ']':
+            tmp_token.type = TokenType::RIGHT_ARRAY_TOKEN;
+            _tokens.push_back(tmp_token);
+            index += 1;
+            break;
+
+        /*comma token: ,*/
+        case ',':
+            tmp_token.type = TokenType::COMMA_TOKEN;
+            _tokens.push_back(tmp_token);
+            index += 1;
+            break;
 
         /*null token*/
         case 'n':
@@ -271,8 +292,11 @@ void TokenStream::_split_to_tokens()
                 char tmp_ch = _json_raw_str[index];
                 if (flag == false)
                 {
-                    if (tmp_ch == '\"')
+                    if (tmp_ch == '\"') // should index++
+                    {
+                        index += 1;
                         break;
+                    }
 
                     if (tmp_ch == '\\')
                     {

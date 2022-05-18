@@ -33,6 +33,9 @@ namespace Json
             }
             return ParseError::ERROR_KEY_WORD;
         }
+        //printf("*****************\n");
+        //tokens.debug_print();
+        //printf("*****************\n");
         return _parse_json(tokens, _parsed_result);
     }
     ParseError Reader::_parse_json(TokenStream &in_tokens, Value &in_value)
@@ -54,6 +57,8 @@ namespace Json
             return _parse_number(in_tokens, in_value);
         case TokenType::STRING_TOKEN:
             return _parse_string(in_tokens, in_value);
+        case TokenType::LEFT_ARRAY_TOKEN:
+            return _parse_array(in_tokens,in_value);
         default:
             return ParseError::INVALID_VALUE;
         }
@@ -108,6 +113,70 @@ namespace Json
 
         in_value = Value(ValueType::STRING_TYPE,token.str_data);
         in_tokens.next();
+        return ParseError::OK;
+    }
+
+    ParseError Reader::_parse_array(TokenStream &in_tokens,Value& in_value)
+    {
+        in_value.set_type(ValueType::ARRAY_TYPE);
+        bool flag = false;// 状态机，由于状态少直接用bool表示
+        while(in_tokens.getToken().type != TokenType::END_TOKEN)
+        {
+            if(flag == false)// ',' 或 '['(初始) 状态
+            {
+                /*do nothing else here*/
+                in_tokens.next();
+
+                _parse_whitespace(in_tokens);// 确保空白字符不影响解析
+
+                if (in_tokens.getToken().type == TokenType::FALSE_TOKEN ||
+                    in_tokens.getToken().type == TokenType::TRUE_TOKEN ||
+                    in_tokens.getToken().type == TokenType::NULL_TOKEN ||
+                    in_tokens.getToken().type == TokenType::NUMBER_TOKEN ||
+                    in_tokens.getToken().type == TokenType::STRING_TOKEN ||
+                    in_tokens.getToken().type == TokenType::LEFT_ARRAY_TOKEN)
+                {
+                    flag = true;
+                }
+                else
+                {
+                    //error:逗号之后遇到了无效token
+                    printf("invalid token after ,\n");
+                    in_tokens.getToken().debug_print();
+                    in_value.set_type(ValueType::INVALID_TYPE);
+                    return ParseError::INVALID_VALUE;
+                }
+            }
+            else // value状态
+            {
+                Value tmp_value;
+                ParseError ret_errorno = _parse_value(in_tokens,tmp_value);
+                if(ret_errorno != ParseError::OK)
+                    return ret_errorno;
+                in_value.push_value(std::move(tmp_value)); // value没有实现copy函数，因其效率太低
+
+                _parse_whitespace(in_tokens);// 确保空白字符不影响解析
+
+                if(in_tokens.getToken().type == TokenType::COMMA_TOKEN)
+                {
+                    flag = false;
+                }
+                else if(in_tokens.getToken().type == TokenType::RIGHT_ARRAY_TOKEN)
+                {
+                    // 结束array解析
+                    return ParseError::OK;
+                }
+                else
+                {
+                    //error:value之后遇到了除',' and ']'的token
+                    printf("invalid token after value\n");
+                    in_tokens.getToken().debug_print();
+                    in_value.set_type(ValueType::INVALID_TYPE);
+                    return ParseError::INVALID_VALUE;
+                }
+            }
+       }
+
         return ParseError::OK;
     }
 }

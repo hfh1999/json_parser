@@ -1,6 +1,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 #include <string>
+#include <iostream>
 #include <vector>
 using std::string;
 using std::vector;
@@ -41,6 +42,51 @@ struct Token
     TokenType type;
     NumData num_data;
     string str_data;
+    void debug_print()
+    {
+        switch (type)
+        {
+        case NUMBER_TOKEN:
+            printf("number token.\n");
+            break;
+        case STRING_TOKEN:
+            printf("string token.\n");
+            break;
+        case TRUE_TOKEN:
+            printf("true token.\n");
+            break;
+        case FALSE_TOKEN:
+            printf("false token.\n");
+            break;
+        case NULL_TOKEN:
+            printf("null token.\n");
+            break;
+        case LEFT_OBJECT_TOKEN:
+            printf("left_object token.\n");
+            break;
+        case RIGHT_OBJECT_TOKEN:
+            printf("right_object token.\n");
+            break;
+        case LEFT_ARRAY_TOKEN:
+            printf("left_array token.\n");
+            break;
+        case RIGHT_ARRAY_TOKEN:
+            printf("rigth_array token.\n");
+            break;
+        case COMMA_TOKEN:
+            printf("comma token.\n");
+            break;
+        case COLON_TOKEN:
+            printf("colon token.\n");
+            break;
+        case WHITE_TOKEN:
+            printf("white token.\n");
+            break;
+        case END_TOKEN:
+            printf("end token.\n");
+            break;
+        }
+    }
 };
 class TokenStream
 {
@@ -66,6 +112,13 @@ public:
     TokensStatus getStatus()
     {
         return _status;
+    }
+    void debug_print()
+    {
+        for(auto item :_tokens)
+        {
+            item.debug_print();
+        }
     }
 
 private:
