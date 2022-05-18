@@ -121,7 +121,6 @@ void TokenStream::_split_to_tokens()
             /*状态机*/
             enum NumParseStatus
             {
-                MINUS_STATUS, // 开始的负号
                 INT_STATUS,   // 数字的整数部分
                 DOT_STATUS,   // 小数点
                 E_STATUS,     // e指数符号
@@ -133,14 +132,16 @@ void TokenStream::_split_to_tokens()
             // printf("enter number deal...\n");
             NumParseStatus status;
             NumData num_data;
-            if (ch == '-')
+            if (ch == '-') // 处理开始的负号
             {
-                status = NumParseStatus::MINUS_STATUS;
+                status = NumParseStatus::INT_STATUS;
+                index += 1;
                 num_data.is_minus = true;
             }
             else
             {
                 status = NumParseStatus::INT_STATUS;
+                index += 1;
                 num_data.is_minus = false;
             }
 
