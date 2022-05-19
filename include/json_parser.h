@@ -1,15 +1,19 @@
 #ifndef JSON_PARSER_H
 #define JSON_PARSER_H
 #include <string>
-#include <value_data.h>
 #include <cassert>
+#include <vector>
 #include <memory>
 #include <map>
 using std::multimap;
+using std::shared_ptr;
 using std::string;
-using std::unique_ptr;
+using std::vector;
 
 class TokenStream;
+class ValueData; // 在相对应的命名空间进行申明
+// unique_ptr对于不完整类型需要在别处处理其析构函数
+// 一旦定义了自己的析构函数则移动构造函数将不会被编译器自动产生
 namespace Json
 {
     // 表示解析过后的数据
@@ -29,108 +33,59 @@ namespace Json
         friend class Reader;
 
     public:
-        Value() : _type(ValueType::INVALID_TYPE), _data() {}
-        Value(ValueType in_type) : _type(in_type), _data() {}
-        Value(ValueType in_type, double in_num) : _type(in_type), _data(new ValueData(in_num)) {}
-        Value(ValueType in_type, const string &in_s) : _type(in_type), _data(new ValueData(in_s)) {}
-        bool isBool()
-        {
-            return _type == ValueType::FALSE_TYPE ||
-                   _type == ValueType::TRUE_TYPE;
-        }
-        bool isNull()
-        {
-            return _type == ValueType::NULL_TYPE;
-        }
-        bool isNumber()
-        {
-            return _type == ValueType::NUMBER_TYPE;
-        }
-        bool isString()
-        {
-            return _type == ValueType::STRING_TYPE;
-        }
-        bool isArray()
-        {
-            return _type == ValueType::ARRAY_TYPE;
-        }
-        bool isObject()
-        {
-            return _type == ValueType::OBJECT_TYPE;
-        }
+        typedef vector<Value>::size_type ArrayIndex;
+        Value();
+        Value(ValueType in_type);
+        Value(ValueType in_type, double in_num);
+        Value(ValueType in_type, const string &in_s);
+        ~Value();
 
-        ValueType getType()
+        bool isBool() const;
+        bool isNull() const;
+        bool isNumber() const;
+        bool isString() const;
+        bool isArray() const;
+        bool isObject() const;
+
+        bool asBool() const;
+        double asDouble() const;
+        string asString() const;
+
+        const Value &operator[](ArrayIndex index) const;  // vist array const;
+        Value &operator[](ArrayIndex index);              // vist array;
+        const Value &operator[](const string &key) const; // vist object const;
+        Value &operator[](const string &key);             // vist object;
+
+        ValueType getType() const
         {
             return _type;
         }
 
-        void debug_print()
-        {
-            switch (_type)
-            {
-            case ValueType::TRUE_TYPE:
-            case ValueType::FALSE_TYPE:
-                printf("boolen type.\n");
-                break;
-            case ValueType::NULL_TYPE:
-                printf("null type.\n");
-                break;
-            case ValueType::NUMBER_TYPE:
-                printf("NUMBER type.\n");
-                break;
-            case ValueType::STRING_TYPE:
-                printf("STRING type.\n");
-                break;
-            case ValueType::INVALID_TYPE:
-                printf("Invalid type.\n");
-                break;
-            case ValueType::ARRAY_TYPE:
-                printf("Array type.\n");
-                break;
-            case ValueType::OBJECT_TYPE:
-                printf("Object type.\n");
-                break;
-            default:
-                printf("Unknow type.\n");
-            }
-        }
+        void debug_print() const;
 
     private:
-        double ret_number()
-        {
-            return _data->n;
-        }
-        void push_value(Value &&in_v)
-        {
-            _array.push_back(std::move(in_v)); // 必须显式的指定使用right value版本的push_back.
-        }
-        void insert_object(const string &key, Value &&in_v)
-        {
-            _object.emplace(key, std::move(in_v));
-        }
-        void set_type(ValueType in_type)
-        {
-            _type = in_type;
-        }
+        void _set_type(ValueType in_type);
         ValueType _type;
-        vector<Value> _array;
-        multimap<string, Value> _object; // 用unorderd_map时需要用指针
-                                         //根据标准键值可以重复
-        unique_ptr<ValueData> _data;
+
+        double _ret_number() const;
+        string _ret_string() const;
+        void _push_value(Value &&in_v);                       // for _data -> array
+        void _insert_object(const string &key, Value &&in_v); // for _data -> object
+        shared_ptr<ValueData> _data;
     };
     enum ParseStatus
     {
-        INVALID_VALUE,                     // 无效值
-        EXPECT_VALUE,                      // 期望值
-        ERROR_KEY_WORD,                    // 关键词错误
+        INVALID_VALUE,                     //无效值
+        EXPECT_VALUE,                      //期望值
+        ERROR_KEY_WORD,                    //关键词错误
         ARRAY_INVALID_TOKEN_AFTER_BRACKET, //解析array时中括号之后遇到了无效的token
         ARRAY_INVALID_TOKEN_AFTER_COMMA,   //解析array时逗号之后遇到了无效的token
         ARRAY_INVALID_TOKEN_AFTER_VALUE,   //解析array时值之后遇到了无效的token
         OBJECT_INVALID_TOKEN_AFTER_BRACE,  //解析object时大括号之后遇到无效的token
         OBJECT_INVALID_TOKEN_AFTER_KEY,    //解析object时key之后遇到无效的token
-        OBJECT_INVALID_TOKEN_AFTER_COLON,  // 解析object时:之后遇到无效的token
-        OBJECT_INVALID_TOKEN_AFTER_VALUE,  // 解析object时值之后遇到无效的token
-        OBJECT_INVAID_TOKEN_AFTER_COMMA,   // 解析object时逗号之后遇到武侠的token
+        OBJECT_INVALID_TOKEN_AFTER_COLON,  //解析object时:之后遇到无效的token
+        OBJECT_INVALID_TOKEN_AFTER_VALUE,  //解析object时值之后遇到无效的token
+        OBJECT_INVAID_TOKEN_AFTER_COMMA,   //解析object时逗号之后遇到武侠的token
         OK,
     };
     // 从字符串中读取。
