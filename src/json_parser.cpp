@@ -103,6 +103,7 @@ namespace Json
         /*将number token转换为double.*/
         double number = 0;
         //*todo*
+        number = 0;
 
         in_value = Value(ValueType::NUMBER_TYPE, number);
         in_tokens.next();

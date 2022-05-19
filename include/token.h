@@ -34,10 +34,10 @@ enum TokensStatus
 struct NumData
 {
     bool is_minus;
-    uint32_t int_part;
-    uint32_t frac_part;
+    uint64_t int_part;
+    uint64_t frac_part;
     bool exp_sign; // + -> true
-    int32_t exp_part;
+    uint64_t exp_part;
 };
 struct Token
 {

@@ -1,4 +1,5 @@
 #include <token.h>
+#include <cassert>
 #include <cctype>
 const int NULL_STR_LEN = 4;
 const int TRUE_STR_LEN = 4; // len("true") == 4
@@ -167,6 +168,7 @@ void TokenStream::_split_to_tokens()
             else if (ch == '0') // 先导0
             {
                 index += 1;
+                num_data.int_part = 0;
                 if (index >= _json_raw_str.size())
                 {
                     status = NumParseStatus::END_STATUS;
@@ -212,7 +214,7 @@ void TokenStream::_split_to_tokens()
 
                 while (index < _json_raw_str.size() && isdigit(_json_raw_str[index]))
                 {
-                    num_data.int_part = num_data.int_part * 10 + _json_raw_str[index];
+                    num_data.int_part = num_data.int_part * 10 + _json_raw_str[index] - '0';
                     index += 1;
                 }
                 if (index >= _json_raw_str.size())
@@ -263,7 +265,7 @@ void TokenStream::_split_to_tokens()
                 num_data.frac_part = 0;
                 while (index < _json_raw_str.size() && isdigit(_json_raw_str[index]))
                 {
-                    num_data.frac_part = num_data.frac_part * 10 + _json_raw_str[index];
+                    num_data.frac_part = num_data.frac_part * 10 + _json_raw_str[index] - '0';
                     index += 1;
                 }
                 if (index >= _json_raw_str.size())
@@ -297,6 +299,7 @@ void TokenStream::_split_to_tokens()
                 }
                 else if (isdigit(_json_raw_str[index]))
                 {
+                    num_data.exp_sign = true;
                     status = NumParseStatus::E_STATUS;
                 }
                 else
@@ -311,11 +314,11 @@ void TokenStream::_split_to_tokens()
             {
                 if (_json_raw_str[index] == '+')
                 {
-                    num_data.exp_part = true;
+                    num_data.exp_sign = true;
                 }
                 else
                 {
-                    num_data.exp_part = false;
+                    num_data.exp_sign = false;
                 }
                 index += 1;
                 if (index >= _json_raw_str.size())
@@ -340,7 +343,7 @@ void TokenStream::_split_to_tokens()
                 num_data.exp_part = 0;
                 while (index < _json_raw_str.size() && isdigit(_json_raw_str[index]))
                 {
-                    num_data.exp_part = num_data.exp_part * 10 + _json_raw_str[index];
+                    num_data.exp_part = num_data.exp_part * 10 + _json_raw_str[index] - '0';
                     index += 1;
                 }
                 status = NumParseStatus::END_STATUS;
@@ -352,6 +355,9 @@ void TokenStream::_split_to_tokens()
                 tmp_token.num_data = num_data;
                 _tokens.push_back(tmp_token);
             }
+
+            // 不应该出现
+            assert(false);
             break;
 
         /*字符串*/

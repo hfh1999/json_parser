@@ -171,6 +171,7 @@ int main()
     test_value("     \"h\\\"el\\blo\"   ", ValueType::STRING_TYPE);
     test_value_panic("     \"h\\\"el\\\blo\"", ValueType::STRING_TYPE);
     test_value("     \"h   \\\"el\\b\\\\lo\"   ", ValueType::STRING_TYPE);
+    test_value("\"\\\" \\\\ \\/ \\b \\f \\n \\r \\t\"",ValueType::STRING_TYPE);
 
     printf("********************\n");
 
