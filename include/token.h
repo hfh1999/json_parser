@@ -23,7 +23,9 @@ enum TokenType
 };
 enum TokensStatus
 {
-    KEY_WORD_ERROR,      // 关键词书写错误，不是null,true,false部分写对
+    KEY_WORD_NULL_ERROR,//关键词null拼写错误
+    KEY_WORD_TRUE_ERROR,//关键词true拼写错误
+    KEY_WORD_FALSE_ERROR,//关键词false拼写错误
     NUMBER_FORMAT_ERROR, // 数字格式错误
     EXPECT_KEY_ERROR,    // 不是预期中的关键词
     TOKENS_GOOD,         // token状态完好
@@ -71,7 +73,7 @@ struct Token
             printf("left_array token.\n");
             break;
         case RIGHT_ARRAY_TOKEN:
-            printf("rigth_array token.\n");
+            printf("right_array token.\n");
             break;
         case COMMA_TOKEN:
             printf("comma token.\n");

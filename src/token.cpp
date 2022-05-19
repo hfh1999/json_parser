@@ -68,7 +68,7 @@ void TokenStream::_split_to_tokens()
         case 'n':
             if (index + NULL_STR_LEN - 1 >= _json_raw_str.size())
             {
-                _status = TokensStatus::KEY_WORD_ERROR;
+                _status = TokensStatus::KEY_WORD_NULL_ERROR;
                 return;
             }
             if (_json_raw_str[index + 1] == 'u' &&
@@ -81,7 +81,7 @@ void TokenStream::_split_to_tokens()
             }
             else
             {
-                _status = TokensStatus::KEY_WORD_ERROR;
+                _status = TokensStatus::KEY_WORD_NULL_ERROR;
                 return;
             }
             break;
@@ -90,7 +90,7 @@ void TokenStream::_split_to_tokens()
         case 't':
             if (index + TRUE_STR_LEN - 1 >= _json_raw_str.size())
             {
-                _status = TokensStatus::KEY_WORD_ERROR;
+                _status = TokensStatus::KEY_WORD_TRUE_ERROR;
                 return;
             }
             if (_json_raw_str[index + 1] == 'r' &&
@@ -103,7 +103,7 @@ void TokenStream::_split_to_tokens()
             }
             else
             {
-                _status = TokensStatus::KEY_WORD_ERROR;
+                _status = TokensStatus::KEY_WORD_TRUE_ERROR;
                 return;
             }
             break;
@@ -112,7 +112,7 @@ void TokenStream::_split_to_tokens()
         case 'f':
             if (index + FALSE_STR_LEN - 1 >= _json_raw_str.size())
             {
-                _status = TokensStatus::KEY_WORD_ERROR;
+                _status = TokensStatus::KEY_WORD_FALSE_ERROR;
                 return;
             }
             if (_json_raw_str[index + 1] == 'a' &&
@@ -123,6 +123,11 @@ void TokenStream::_split_to_tokens()
                 tmp_token.type = TokenType::FALSE_TOKEN;
                 _tokens.push_back(tmp_token);
                 index += FALSE_STR_LEN;
+            }
+            else
+            {
+                _status = TokensStatus::KEY_WORD_FALSE_ERROR;
+                return;
             }
             break;
 
