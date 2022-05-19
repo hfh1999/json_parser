@@ -22,21 +22,21 @@ void TokenStream::_split_to_tokens()
             _tokens.push_back(tmp_token);
             index += 1;
             break;
-        
+
         /*left object token: {*/
         case '{':
             tmp_token.type = TokenType::LEFT_OBJECT_TOKEN;
             _tokens.push_back(tmp_token);
             index += 1;
             break;
-        
+
         /*right object token: }*/
         case '}':
             tmp_token.type = TokenType::RIGHT_OBJECT_TOKEN;
             _tokens.push_back(tmp_token);
             index += 1;
             break;
-        
+
         case ':':
             tmp_token.type = TokenType::COLON_TOKEN;
             _tokens.push_back(tmp_token);
@@ -146,13 +146,14 @@ void TokenStream::_split_to_tokens()
             /*状态机*/
             enum NumParseStatus
             {
-                INT_STATUS,   // 数字的整数部分
-                DOT_STATUS,   // 小数点
-                E_STATUS,     // e指数符号
-                FRAC_STATUS,  // 小数部分
-                ESIGN_STATUS, // e的正负号
-                EINT_STATUS,  // 指数的数值
-                END_STATUS,   // 结束解析
+                INT_STATUS,      // 数字的整数部分,不为0
+                INT_ZERO_STATUS, // 数字的整数部分为0
+                DOT_STATUS,      // 小数点
+                E_STATUS,        // e指数符号
+                FRAC_STATUS,     // 小数部分
+                ESIGN_STATUS,    // e的正负号
+                EINT_STATUS,     // 指数的数值
+                END_STATUS,      // 结束解析
             };
             // printf("enter number deal...\n");
             NumParseStatus status;
@@ -163,16 +164,52 @@ void TokenStream::_split_to_tokens()
                 index += 1;
                 num_data.is_minus = true;
             }
+            else if (ch == '0') // 先导0
+            {
+                index += 1;
+                if (index >= _json_raw_str.size())
+                {
+                    status = NumParseStatus::END_STATUS;
+                }
+                else
+                {
+                    if (_json_raw_str[index] == '.')
+                    {
+                        status = NumParseStatus::DOT_STATUS;
+                    }
+                    else if (_json_raw_str[index] == 'e' || _json_raw_str[index] == 'E')
+                    {
+                        status = NumParseStatus::E_STATUS;
+                    }
+                    else if (isdigit(_json_raw_str[index])) // 是数字则错误
+                    {
+                        // error.
+                        _status = TokensStatus::NUMBER_FORMAT_ERROR;
+                        return;
+                    }
+                    else
+                    {
+                        status = NumParseStatus::END_STATUS;
+                    }
+                }
+            }
             else
             {
                 status = NumParseStatus::INT_STATUS;
-                index += 1;
                 num_data.is_minus = false;
             }
 
+            // 要注意整数部分的先导0是不合法的
             if (status == NumParseStatus::INT_STATUS)
             {
                 num_data.int_part = 0;
+                if (index >= _json_raw_str.size() || !isdigit(_json_raw_str[index]))
+                {
+                    // 不应该什么都不干就结束
+                    _status = TokensStatus::NUMBER_FORMAT_ERROR;
+                    return;
+                }
+
                 while (index < _json_raw_str.size() && isdigit(_json_raw_str[index]))
                 {
                     num_data.int_part = num_data.int_part * 10 + _json_raw_str[index];
@@ -181,19 +218,21 @@ void TokenStream::_split_to_tokens()
                 if (index >= _json_raw_str.size())
                 {
                     status = NumParseStatus::END_STATUS;
-                    break;
-                }
-                if (_json_raw_str[index] == 'e' || _json_raw_str[index] == 'E')
-                {
-                    status = NumParseStatus::E_STATUS;
-                }
-                else if (_json_raw_str[index] == '.')
-                {
-                    status = NumParseStatus::DOT_STATUS;
                 }
                 else
                 {
-                    status = NumParseStatus::END_STATUS;
+                    if (_json_raw_str[index] == 'e' || _json_raw_str[index] == 'E')
+                    {
+                        status = NumParseStatus::E_STATUS;
+                    }
+                    else if (_json_raw_str[index] == '.')
+                    {
+                        status = NumParseStatus::DOT_STATUS;
+                    }
+                    else
+                    {
+                        status = NumParseStatus::END_STATUS;
+                    }
                 }
             }
 
@@ -230,15 +269,17 @@ void TokenStream::_split_to_tokens()
                 if (index >= _json_raw_str.size())
                 {
                     status = NumParseStatus::END_STATUS;
-                    break;
-                }
-                if (_json_raw_str[index] == 'e' || _json_raw_str[index] == 'E')
-                {
-                    status = NumParseStatus::E_STATUS;
                 }
                 else
                 {
-                    status = NumParseStatus::END_STATUS;
+                    if (_json_raw_str[index] == 'e' || _json_raw_str[index] == 'E')
+                    {
+                        status = NumParseStatus::E_STATUS;
+                    }
+                    else
+                    {
+                        status = NumParseStatus::END_STATUS;
+                    }
                 }
             }
             if (status == NumParseStatus::E_STATUS)
@@ -253,6 +294,10 @@ void TokenStream::_split_to_tokens()
                 if (_json_raw_str[index] == '+' || _json_raw_str[index] == '-')
                 {
                     status = NumParseStatus::ESIGN_STATUS;
+                }
+                else if (isdigit(_json_raw_str[index]))
+                {
+                    status = NumParseStatus::E_STATUS;
                 }
                 else
                 {
@@ -303,11 +348,10 @@ void TokenStream::_split_to_tokens()
 
             if (status == NumParseStatus::END_STATUS)
             {
+                tmp_token.type = TokenType::NUMBER_TOKEN;
+                tmp_token.num_data = num_data;
+                _tokens.push_back(tmp_token);
             }
-            tmp_token.type = TokenType::NUMBER_TOKEN;
-            tmp_token.num_data = num_data;
-            _tokens.push_back(tmp_token);
-            // printf("!!!!yes!!!\n");
             break;
 
         /*字符串*/
@@ -360,8 +404,8 @@ void TokenStream::_split_to_tokens()
                         strbuf.push_back('\t');
                         break;
 
-                    /*to do*/
-                    // \uxxxx 转义为utf8编码
+                        /*to do*/
+                        // \uxxxx 转义为utf8编码
 
                     default:
                         _status = TokensStatus::STRING_BAD;
