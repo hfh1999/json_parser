@@ -179,13 +179,10 @@ namespace Json
     {
         _type = in_type;
     }
-    Reader::Reader(const string &in_str, Value &in_val) : _raw_str(in_str), _parsed_result(in_val)
-    {
-    }
 
-    ParseStatus Reader::parse()
+    ParseStatus Reader::parse(const string &in_str, Value &in_val)
     {
-        TokenStream tokens(_raw_str);
+        TokenStream tokens(in_str);
         if (tokens.getStatus() != TokensStatus::TOKENS_GOOD)
         {
             switch (tokens.getStatus())
@@ -212,7 +209,7 @@ namespace Json
         // printf("*****************\n");
         // tokens.debug_print();
         // printf("*****************\n");
-        return _parse_json(tokens, _parsed_result);
+        return _parse_json(tokens, in_val);
     }
     ParseStatus Reader::_parse_json(TokenStream &in_tokens, Value &in_value)
     {

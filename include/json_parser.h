@@ -93,22 +93,19 @@ namespace Json
     class Reader
     {
     public:
-        Reader(const string &in_str, Value &in_val);
-        ParseStatus parse();
+        static ParseStatus parse(const string &in_str, Value &in_val);
 
     private:
-        ParseStatus _parse_json(TokenStream &in_tokens, Value &in_value);
-        void _parse_whitespace(TokenStream &in_tokens);
-        ParseStatus _parse_null(TokenStream &in_tokens, Value &in_value);
-        ParseStatus _parse_value(TokenStream &in_tokens, Value &in_value);
-        ParseStatus _parse_boolen(TokenStream &in_tokens, Value &in_value);
-        ParseStatus _parse_number(TokenStream &in_tokens, Value &in_value);
-        ParseStatus _parse_string(TokenStream &in_tokens, Value &in_value);
-        ParseStatus _parse_array(TokenStream &in_tokens, Value &in_value);
-        ParseStatus _parse_object(TokenStream &in_tokens, Value &in_value);
-
-        Value &_parsed_result;
-        string _raw_str;
+        Reader() = default;
+        static ParseStatus _parse_json(TokenStream &in_tokens, Value &in_value);
+        static void _parse_whitespace(TokenStream &in_tokens);
+        static ParseStatus _parse_null(TokenStream &in_tokens, Value &in_value);
+        static ParseStatus _parse_value(TokenStream &in_tokens, Value &in_value);
+        static ParseStatus _parse_boolen(TokenStream &in_tokens, Value &in_value);
+        static ParseStatus _parse_number(TokenStream &in_tokens, Value &in_value);
+        static ParseStatus _parse_string(TokenStream &in_tokens, Value &in_value);
+        static ParseStatus _parse_array(TokenStream &in_tokens, Value &in_value);
+        static ParseStatus _parse_object(TokenStream &in_tokens, Value &in_value);
     };
 }
 #endif

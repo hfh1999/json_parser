@@ -32,8 +32,7 @@ void test_value_type(const string &in_str, ValueType expect_type)
 {
     test_count++;
     Json::Value v;
-    Json::Reader reader(in_str, v);
-    if (reader.parse() == Json::ParseStatus::OK && v.getType() == expect_type)
+    if(Json::Reader::parse(in_str,v) == Json::ParseStatus::OK && v.getType() == expect_type)
     {
         printf("test %d Ok.\n", test_count);
         test_pass += 1;
@@ -48,8 +47,7 @@ void test_value_type_invalid(const string &in_str, ValueType expect_type)
 {
     test_count++;
     Json::Value v;
-    Json::Reader reader(in_str, v);
-    if (reader.parse() != Json::ParseStatus::OK)
+    if(Json::Reader::parse(in_str,v) != Json::ParseStatus::OK)
     {
         printf("test %d Ok.\n", test_count);
         test_pass += 1;
@@ -232,8 +230,7 @@ int main()
         istreambuf_iterator<char>beg(in_f),end;
         string str(beg,end);
         std::cout << str <<std::endl;
-        Json::Reader reader(str,v);
-        auto result = reader.parse();
+        auto result = Json::Reader::parse(str,v);
         if (result != Json::ParseStatus::OK)
         {
             Json::ParseStatusPrint(result);
