@@ -1,0 +1,10 @@
+{
+    "hello":"this is what???",
+    "one":"one's value.",
+    "second":2,
+    "third":[
+        1,
+        true,
+        "third value"
+    ]
+}

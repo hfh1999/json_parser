@@ -7,11 +7,56 @@ using std::make_shared;
 
 namespace Json
 {
+    void ParseStatusPrint(ParseStatus in_status)
+    {
+        switch (in_status)
+        {
+        case ParseStatus::INVALID_VALUE:
+            printf("ParseStatus:invalid value in json string.\n");
+            break;
+        case ParseStatus::EXPECT_VALUE:
+            printf("ParseStatus:expect a value.\n");
+            break;
+        case ParseStatus::ERROR_KEY_WORD:
+            printf("ParseStaus: error key word,becase the tokenlize error.\n");
+            break;
+        case ParseStatus::ARRAY_INVALID_TOKEN_AFTER_BRACKET:
+            printf("ParseStatus:array invalid token after bracket\n");
+            break;
+        case ParseStatus::ARRAY_INVALID_TOKEN_AFTER_COMMA:
+            printf("ParseStatus:array invalid token after comma\n");
+            break;
+        case ParseStatus::ARRAY_INVALID_TOKEN_AFTER_VALUE:
+            printf("ParseStatus:array invalid token after value\n");
+            break;
+        case ParseStatus::OBJECT_INVALID_TOKEN_AFTER_BRACE:
+            printf("ParseStatus:object invalid token after brace.\n");
+            break;
+        case ParseStatus::OBJECT_INVALID_TOKEN_AFTER_KEY:
+            printf("ParseStatus:object invalid token after key.\n");
+            break;
+        case ParseStatus::OBJECT_INVALID_TOKEN_AFTER_COLON:
+            printf("ParseStatus:object invalid token after colon.\n");
+            break;
+        case ParseStatus::OBJECT_INVALID_TOKEN_AFTER_VALUE:
+            printf("ParseStatus:object invalid token after value.\n");
+            break;
+        case ParseStatus::OBJECT_INVAID_TOKEN_AFTER_COMMA:
+            printf("ParseStatus:object invalid token after comma.\n");
+            break;
+        case ParseStatus::OK:
+            printf("ParseStatus:Ok.\n");
+            break;
+        default:
+            printf("ParseStaus: Unknow error.\n");
+            break;
+        }
+    }
     Value::Value() : _type(ValueType::INVALID_TYPE), _data(make_shared<ValueData>()) {}
     Value::Value(ValueType in_type) : _type(in_type), _data(make_shared<ValueData>()) {}
     Value::Value(ValueType in_type, double in_num) : _type(in_type), _data(make_shared<ValueData>(in_num)) {}
     Value::Value(ValueType in_type, const string &in_s) : _type(in_type), _data(make_shared<ValueData>(in_s)) {}
-    Value::~Value(){}
+    Value::~Value() {}
     bool Value::isBool() const
     {
         return _type == ValueType::FALSE_TYPE ||
@@ -58,22 +103,30 @@ namespace Json
         assert(_type == ValueType::STRING_TYPE);
         return _ret_string();
     }
-    const Value& Value::operator[](ArrayIndex index) const{
+    const Value &Value::operator[](ArrayIndex index) const
+    {
         assert(_type == ValueType::ARRAY_TYPE);
         return (_data->array)[index];
     }
-    Value& Value::operator[](ArrayIndex index){
-        return const_cast<Value&>(static_cast<const Value>(*this)[index]);
+    Value &Value::operator[](ArrayIndex index)
+    {
+        return const_cast<Value &>(static_cast<const Value>(*this)[index]);
     }
-    const Value& Value::operator[](const string& key) const
+    const Value &Value::operator[](const string &key) const
     {
         assert(_type == ValueType::OBJECT_TYPE);
         auto it = (_data->object).find(key);
+        if (it == _data->object.end()) // 有更好的方式吗?
+        {
+            (_data->object).emplace(key, Value(ValueType::NULL_TYPE));
+            it = (_data->object).find(key);
+            return it->second;
+        }
         return it->second;
     }
-    Value& Value::operator[](const string& key)
+    Value &Value::operator[](const string &key)
     {
-        return const_cast<Value&>(static_cast<const Value>(*this)[key]);
+        return const_cast<Value &>(static_cast<const Value>(*this)[key]);
     }
 
     void Value::debug_print() const
@@ -120,7 +173,7 @@ namespace Json
     }
     void Value::_insert_object(const string &key, Value &&in_v)
     {
-        (_data->object).emplace(key,std::move(in_v));
+        (_data->object).emplace(key, std::move(in_v));
     }
     void Value::_set_type(ValueType in_type)
     {
@@ -349,7 +402,11 @@ namespace Json
         } status;
 
         status = LEFT_BRACE_STATUS;
+
+        /*deal {*/
         in_tokens.next();
+
+        _parse_whitespace(in_tokens);
 
         // in_tokens.getToken().debug_print();
         if (in_tokens.getToken().type == TokenType::RIGHT_OBJECT_TOKEN)
@@ -372,9 +429,11 @@ namespace Json
         {
             /*deal key here.*/
             string key = in_tokens.getToken().str_data; // copy here.
-
             // in_tokens.getToken().debug_print();
             in_tokens.next();
+
+            _parse_whitespace(in_tokens);
+
             if (in_tokens.getToken().type != TokenType::COLON_TOKEN)
             {
                 // error.
@@ -385,6 +444,7 @@ namespace Json
 
             /*deal : here*/
             in_tokens.next();
+            _parse_whitespace(in_tokens);
             if (!__valid_tokens_for_value(in_tokens.getToken().type))
             {
                 // error.
@@ -400,6 +460,9 @@ namespace Json
                 return is_ok;
             }
             in_value._insert_object(key, std::move(tmp_value));
+
+            _parse_whitespace(in_tokens);
+
             if (in_tokens.getToken().type == TokenType::COMMA_TOKEN)
             {
                 status = COMMA_STATUS;
@@ -420,6 +483,9 @@ namespace Json
             /*deal ,*/
             // in_tokens.getToken().debug_print();
             in_tokens.next();
+
+            _parse_whitespace(in_tokens);
+
             if (in_tokens.getToken().type == TokenType::STRING_TOKEN)
             {
                 status = MEMBER_STATUS;
@@ -434,6 +500,7 @@ namespace Json
         }
 
         /*deal }*/
+        assert(status == RIGHT_BRACE_STATUS);
         in_tokens.next();
         return ParseStatus::OK;
     }

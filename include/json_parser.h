@@ -88,6 +88,7 @@ namespace Json
         OBJECT_INVAID_TOKEN_AFTER_COMMA,   //解析object时逗号之后遇到武侠的token
         OK,
     };
+    void ParseStatusPrint(ParseStatus in_status);
     // 从字符串中读取。
     class Reader
     {

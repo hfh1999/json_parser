@@ -19,6 +19,7 @@ void TokenStream::_split_to_tokens()
         case ' ':
         case '\r':
         case '\n':
+        case '\t':
             tmp_token.type = TokenType::WHITE_TOKEN;
             _tokens.push_back(tmp_token);
             index += 1;
@@ -300,7 +301,7 @@ void TokenStream::_split_to_tokens()
                 else if (isdigit(_json_raw_str[index]))
                 {
                     num_data.exp_sign = true;
-                    status = NumParseStatus::E_STATUS;
+                    status = NumParseStatus::EINT_STATUS;
                 }
                 else
                 {
@@ -354,6 +355,7 @@ void TokenStream::_split_to_tokens()
                 tmp_token.type = TokenType::NUMBER_TOKEN;
                 tmp_token.num_data = num_data;
                 _tokens.push_back(tmp_token);
+                break;
             }
 
             // 不应该出现
@@ -362,6 +364,7 @@ void TokenStream::_split_to_tokens()
 
         /*字符串*/
         case '\"':
+            strbuf.clear();
             index += 1;
             for (; index <= _json_raw_str.size(); index++)
             {
