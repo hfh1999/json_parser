@@ -31,6 +31,7 @@ namespace Json
     class Value
     {
         friend class Reader;
+        friend class Writer;
 
     public:
         typedef vector<Value>::size_type ArrayIndex;
@@ -89,7 +90,8 @@ namespace Json
         OK,
     };
     void ParseStatusPrint(ParseStatus in_status);
-    // 从字符串中读取。
+
+    // 读取json
     class Reader
     {
     public:
@@ -107,5 +109,20 @@ namespace Json
         static ParseStatus _parse_array(TokenStream &in_tokens, Value &in_value);
         static ParseStatus _parse_object(TokenStream &in_tokens, Value &in_value);
     };
+
+    // 从Value转换为Json
+    class Writer
+    {
+    public:
+        static string WriteToString(const Value &in_v);
+
+    private:
+        Writer() = default;
+        void static _stringify_value(const Value &in_v, string &in_s);
+        void static _stringify_number(const Value &in_v, string &in_s);
+        void static _stringify_string(const Value &in_v, string &in_s);
+        void static _stringify_array(const Value &in_v, string &in_s);
+        void static _stringify_object(const Value &in_v, string &in_s);
+    }
 }
 #endif

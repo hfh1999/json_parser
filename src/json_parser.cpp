@@ -501,4 +501,89 @@ namespace Json
         in_tokens.next();
         return ParseStatus::OK;
     }
+    string Writer::WriteToString(const Value &in_v)
+    {
+        if(in_v.getType() == ValueType::INVALID_TYPE)
+            return string();
+        string strbuf;
+        _stringify_value(in_v,strbuf);
+        return strbuf;
+    }
+    void Writer::_stringify_value(const Value &in_v, string &in_s){
+        switch (in_v.getType())
+        {
+        case ValueType::TRUE_TYPE:
+            in_s.append("true");
+            break;
+        case ValueType::FALSE_TYPE:
+            in_s.append("false");
+            break;
+        case ValueType::NULL_TYPE:
+            in_s.append("null");
+            break;
+        case ValueType::NUMBER_TYPE:
+            _stringify_number(in_v, in_s);
+            break;
+        case ValueType::STRING_TYPE:
+            _stringify_string(in_v,in_s);
+            break;
+        case ValueType::ARRAY_TYPE:
+            _stringify_array(in_v,in_s);
+            break;
+        case ValueType::OBJECT_TYPE:
+            _stringify_object(in_v,in_s);
+            break;
+        default:
+            assert(true);
+        }
+    }
+    void  Writer::_stringify_number(const Value& in_v,string& in_s)
+    {
+        /*处理字符数字输出*/
+        in_s.push_back('0');
+    }
+    void Writer::_stringify_string(const Value &in_v, string &in_s)
+    {
+        /*to do 处理转义符*/
+        in_s.append(in_v._data->s);
+    }
+    void Writer::_stringify_array(const Value &in_v, string &in_s)
+    {
+        in_s.push_back('[');
+        if((in_v._data->array).size() == 1)
+        {
+            _stringify_value(in_v,in_s);
+        }
+        else
+        {
+            for(auto& item:in_v._data->array)
+            {
+                _stringify_value(in_v,in_s);
+                in_s.push_back(',');
+            }
+        }
+        in_s.push_back(']');
+    }
+    void Writer::_stringify_object(const Value &in_v, string &in_s)
+    {
+        in_s.push_back('{');
+        if((in_v._data->object).size() == 1)
+        {
+            in_s.append((*((in_v._data->object).begin())).first);
+            in_s.append(":");
+            _stringify_value(in_v,in_s);
+        }
+        else
+        {
+            for(auto& pair_item:in_v._data->object)
+            {
+                in_s.append(pair_item.first);
+                in_s.append(":");
+                _stringify_value(in_v,in_s);
+                in_s.push_back(',');
+            }
+        }
+        in_s.push_back('}');
+
+    }
 }
